@@ -6,19 +6,40 @@ use App\Http\Requests\StoreAnuncioRequest;
 use App\Http\Requests\UpdateAnuncioRequest;
 use App\Models\Anuncio;
 use App\Models\Produto;
+use App\Services\DeviAuthorizeService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AnuncioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $anuncios = Anuncio::query()
-            ->where('user_id', Auth::id())
-            ->with('produtos')
-            ->latest()
-            ->paginate(10);
+        $q = trim((string) $request->query('q', ''));
+        $sort = (string) $request->query('sort', 'created_at');
+        $dir = strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        return view('anuncios.index', compact('anuncios'));
+        $allowedSorts = ['titulo', 'preco_venda', 'created_at'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'created_at';
+        }
+
+        $query = Anuncio::query()
+            ->where('user_id', Auth::id())
+            ->with('produtos');
+
+        if ($q !== '') {
+            $query->where(function ($qq) use ($q) {
+                $qq->where('titulo', 'like', "%{$q}%")
+                    ->orWhere('descricao', 'like', "%{$q}%")
+                    ->orWhereHas('produtos', function ($p) use ($q) {
+                        $p->where('nome', 'like', "%{$q}%");
+                    });
+            });
+        }
+
+        $anuncios = $query->orderBy($sort, $dir)->paginate(10)->appends($request->query());
+
+        return view('anuncios.index', compact('anuncios', 'q', 'sort', 'dir'));
     }
 
     public function create()
@@ -30,6 +51,11 @@ class AnuncioController extends Controller
     public function store(StoreAnuncioRequest $request)
     {
         $data = $request->validated();
+
+        $authCheck = app(DeviAuthorizeService::class)->check();
+        if (!$authCheck['ok']) {
+            return back()->withInput()->with('error', $authCheck['message'] ?? 'Operação não autorizada.');
+        }
 
         $anuncio = Anuncio::create([
             'titulo' => $data['titulo'],
@@ -77,6 +103,11 @@ class AnuncioController extends Controller
         $this->ensureOwner($anuncio);
 
         $data = $request->validated();
+
+        $authCheck = app(DeviAuthorizeService::class)->check();
+        if (!$authCheck['ok']) {
+            return back()->withInput()->with('error', $authCheck['message'] ?? 'Operação não autorizada.');
+        }
 
         $anuncio->update([
             'titulo' => $data['titulo'],

@@ -1,59 +1,195 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📦 Sistema de Gerenciamento de Produtos e Anúncios (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema web desenvolvido em **Laravel** para gerenciamento de produtos e
+anúncios com autenticação, autorização externa, integração com API
+ViaCEP e controle de acesso baseado em usuário.
 
-## About Laravel
+------------------------------------------------------------------------
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# 📑 Sumário
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   Visão geral
+-   Funcionalidades
+-   Arquitetura
+-   Integrações externas
+-   Estrutura do banco
+-   Instalação
+-   Configuração
+-   Execução
+-   Fluxos críticos
+-   Segurança
+-   Estrutura do projeto
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+------------------------------------------------------------------------
 
-## Learning Laravel
+# 📌 Visão Geral
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+O sistema permite que usuários autenticados gerenciem seus próprios
+produtos e anúncios, com controle de acesso, validação externa de
+autorização e preenchimento automático de dados via APIs.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Tecnologias:
 
-## Laravel Sponsors
+-   PHP 8+
+-   Laravel 11+
+-   MySQL
+-   Blade
+-   JavaScript
+-   REST APIs externas
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+------------------------------------------------------------------------
 
-### Premium Partners
+# 🚀 Funcionalidades
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Autenticação e controle de acesso
 
-## Contributing
+-   Login e Logout
+-   Controle de acesso por usuário
+-   Administrador gerencia usuários
+-   Cliente gerencia apenas seus próprios registros
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+------------------------------------------------------------------------
 
-## Code of Conduct
+## Produtos
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+CRUD completo com os campos:
 
-## Security Vulnerabilities
+-   Nome
+-   Descrição
+-   Preço
+-   CEP
+-   Bairro
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Integração ViaCEP
 
-## License
+Consulta automática:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+https://viacep.com.br/ws/{cep}/json/
+
+Salva automaticamente:
+
+-   Bairro
+-   Logradouro
+-   Cidade
+-   UF
+-   JSON completo
+
+------------------------------------------------------------------------
+
+## Anúncios
+
+-   CRUD completo
+-   Relacionamento muitos-para-muitos com produtos
+-   Tabela intermediária: anuncio_produto
+-   Campo quantidade permite múltiplas unidades do mesmo produto
+
+------------------------------------------------------------------------
+
+## Autorização externa obrigatória
+
+Consulta:
+
+https://util.devi.tools/api/v2/authorize
+
+Se retornar:
+
+    status: fail
+
+A operação é bloqueada.
+
+Arquivo responsável:
+
+app/Services/DeviAuthorizeService.php
+
+------------------------------------------------------------------------
+
+## Filtro e Ordenação
+
+Produtos e Anúncios possuem:
+
+-   Pesquisa por texto
+-   Ordenação por campos
+-   Direção ascendente e descendente
+
+Exemplo:
+
+/produtos?q=notebook&sort=preco&dir=desc
+
+------------------------------------------------------------------------
+
+# 🗄 Estrutura do Banco
+
+users produtos anuncios anuncio_produto
+
+Relacionamentos:
+
+User 1:N Produto User 1:N Anuncio Anuncio N:N Produto
+
+------------------------------------------------------------------------
+
+# ⚙️ Instalação
+
+Instalar dependências:
+
+    composer install
+    npm install
+
+Configurar .env:
+
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3307
+    DB_DATABASE=teste_tecnico_laravel
+    DB_USERNAME=root
+    DB_PASSWORD=sua_senha
+
+Gerar chave:
+
+    php artisan key:generate
+
+Migrar banco:
+
+    php artisan migrate --seed
+
+Compilar frontend:
+
+    npm run build
+
+Executar:
+
+    php artisan serve
+
+------------------------------------------------------------------------
+
+# 🔐 Fluxos Críticos
+
+Criação de Produto:
+
+-   Consulta ViaCEP
+-   Salva dados automaticamente
+
+Criação de Anúncio:
+
+-   Consulta API authorize
+-   Bloqueia ou permite salvar
+
+------------------------------------------------------------------------
+
+# 🛡 Segurança
+
+-   Middleware auth
+-   Proteção CSRF
+-   Escopo por usuário
+-   Validação externa
+
+------------------------------------------------------------------------
+
+# 📁 Estrutura do Projeto
+
+app/ database/ resources/ routes/
+
+------------------------------------------------------------------------
+
+# 👨‍💻 Autor
+
+Yuriel Machado da Costa de Abreu

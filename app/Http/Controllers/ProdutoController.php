@@ -5,18 +5,40 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProdutoRequest;
 use App\Http\Requests\UpdateProdutoRequest;
 use App\Models\Produto;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class ProdutoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $produtos = Produto::query()
-            ->where('user_id', Auth::id())
-            ->latest()
-            ->paginate(10);
-        return view('produtos.index', compact('produtos'));
+        $q = trim((string) $request->query('q', ''));
+        $sort = (string) $request->query('sort', 'created_at');
+        $dir = strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $allowedSorts = ['nome', 'preco', 'cep', 'bairro', 'created_at'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'created_at';
+        }
+
+        $query = Produto::query()->where('user_id', Auth::id());
+
+        if ($q !== '') {
+            $query->where(function ($qq) use ($q) {
+                $qq->where('nome', 'like', "%{$q}%")
+                    ->orWhere('descricao', 'like', "%{$q}%")
+                    ->orWhere('cep', 'like', "%{$q}%")
+                    ->orWhere('bairro', 'like', "%{$q}%")
+                    ->orWhere('logradouro', 'like', "%{$q}%")
+                    ->orWhere('cidade', 'like', "%{$q}%")
+                    ->orWhere('uf', 'like', "%{$q}%");
+            });
+        }
+
+        $produtos = $query->orderBy($sort, $dir)->paginate(10)->appends($request->query());
+
+        return view('produtos.index', compact('produtos', 'q', 'sort', 'dir'));
     }
 
     public function create()

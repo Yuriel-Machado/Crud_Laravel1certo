@@ -34,7 +34,7 @@ class SistemaSeeder extends Seeder
 
         // Produtos do Admin
         $produtosAdmin = [];
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $produtosAdmin[] = Produto::create([
                 'user_id' => $admin->id,
                 'nome' => 'Produto Admin ' . $i,
@@ -47,7 +47,7 @@ class SistemaSeeder extends Seeder
 
         // Produtos do Cliente
         $produtosCliente = [];
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $produtosCliente[] = Produto::create([
                 'user_id' => $cliente->id,
                 'nome' => 'Produto Cliente ' . $i,
@@ -59,7 +59,7 @@ class SistemaSeeder extends Seeder
         }
 
         // Anúncios do Admin (vinculando apenas produtos do Admin)
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $anuncio = Anuncio::create([
                 'user_id' => $admin->id,
                 'titulo' => 'Anúncio Admin ' . $i,
@@ -67,12 +67,12 @@ class SistemaSeeder extends Seeder
                 'preco_venda' => rand(500, 2000),
             ]);
 
-            $ids = collect($produtosAdmin)->random(rand(1, 3))->pluck('id');
+            $ids = collect($produtosAdmin)->random(rand(1, 5))->pluck('id');
             $anuncio->produtos()->attach($ids);
         }
 
         // Anúncios do Cliente (vinculando apenas produtos do Cliente)
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $anuncio = Anuncio::create([
                 'user_id' => $cliente->id,
                 'titulo' => 'Anúncio Cliente ' . $i,
@@ -80,7 +80,7 @@ class SistemaSeeder extends Seeder
                 'preco_venda' => rand(500, 2000),
             ]);
 
-            $ids = collect($produtosCliente)->random(rand(1, 3))->pluck('id');
+            $ids = collect($produtosCliente)->random(rand(1, 5))->pluck('id');
             $anuncio->produtos()->attach($ids);
         }
     }

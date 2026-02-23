@@ -63,7 +63,7 @@ class AnuncioController extends Controller
             'preco_venda' => $data['preco_venda'],
             'user_id' => Auth::id(),
         ]);
-
+#segurança garante que o usuário só vincule produtos que ele mesmo criou
         $this->ensureProdutoIdsOwned($data['produtos']);
 
         $quantidades = $request->input('quantidades', []);
